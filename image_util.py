@@ -143,9 +143,9 @@ class ImageText(object):
             height += text_height
         return (box_width, height - y)
 
-def combine(input_file_path:str, text:str, font:str, font_color, font_size):
+def combine(input_file_path:str, text:str, font:str, font_color, font_size, background=(255, 255, 255, 0)):
     layer_image = Image.open(input_file_path).convert("RGBA")
-    layer_text = ImageText((layer_image.width, layer_image.height), background=(255, 255, 255, 0)) #full transparent bg for this layer
+    layer_text = ImageText((layer_image.width, layer_image.height), background=background) #full transparent bg for this layer
 
     layer_text.write_text_box((0, 0), text, box_width=layer_image.width, font_filename=font, font_size=font_size, color=font_color, place='justify')
     
