@@ -26,6 +26,9 @@ def create_config(path:str):
         'csv_columns': 2,
         '; Use this str separator between row content from csv file': None,
         'separator' : '|',
+        '; Open and close chars will be puted around content of second csv column': None,
+        'source_column_open_char': '(',
+        'source_column_close_char': ')',
         '; Append this suffix to resulting png file before extension': None,
         'file_suffix':'_with_text',
         '; Comma separated list of input images paths, can be quoted with \' or "': None,
@@ -69,12 +72,18 @@ if __name__ == "__main__":
         delimeter = config.get('csv_delimeter')
         column_count = int(config.get('csv_columns'))
         separator = config.get('separator', '')
+        open_char = config.get('source_column_open_char', '')
+        close_char = config.get('source_column_close_char', '')
         try:
             with open(text_input, encoding=text_encoding) as csv_file:
                 reader = csv.reader(csv_file, delimiter=delimeter )
                 for row in reader:
                     for i in range(column_count):
-                        text += row[i] + ' '
+                        if len(row[i].strip()) > 0:
+                            if i == 1:
+                                text += open_char + ' ' + row[i] + ' ' + close_char +' '
+                            else:
+                                text += row[i] + ' '
                     text += separator + ' '
         # check for broken files, WARNING: please provide good files
         except UnicodeDecodeError:
@@ -83,7 +92,11 @@ if __name__ == "__main__":
                 reader = csv.reader(csv_file, delimiter=delimeter )
                 for row in reader:
                     for i in range(column_count):
-                        text += row[i] + ' '
+                        if len(row[i].strip()) > 0:
+                            if i == 1:
+                                text += open_char + ' ' + row[i] + ' ' + close_char +' '
+                            else:
+                                text += row[i] + ' '
                     text += separator + ' '
     else:
         print("Unknown text_input format, only *.txt and *.csv supported")
