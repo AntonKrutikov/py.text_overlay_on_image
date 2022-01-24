@@ -20,6 +20,9 @@ csv_delimeter = ;
 csv_columns = 2
 ; use this str separator between row content from csv file
 separator = |
+; open and close chars will be puted around content of second csv column
+source_column_open_char = (
+source_column_close_char = )
 ; append this suffix to resulting png file before extension
 file_suffix = _with_text
 ; comma separated list of input images paths, can be quoted with ' or "
