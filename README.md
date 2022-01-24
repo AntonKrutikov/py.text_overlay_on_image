@@ -10,3 +10,6 @@ Some results for python3.10 on MacBook M1 and font-size=14:
 
     fullhd image: ~3 sec
     5k image: ~ 25 sec
+
+
+![einshtein](einshtein_with_text.png)
