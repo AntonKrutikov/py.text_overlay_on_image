@@ -12,6 +12,7 @@ def create_config(path:str):
         '; Path to true type font (better) or system font name': None,
         'font': 'Roboto-Regular.ttf',
         'font_size': 14,
+        'line_spacing': 1.0,
         '; Change combinations of font and background colors with opacity to get different results':None,
         '; Resulting image layers will be combined with alpha support':None,
         '; font rgb color with opacity last value from 0 to 255, 0 - fully transparent': None,
@@ -61,6 +62,7 @@ if __name__ == "__main__":
     text_input = config.get('text_file').strip().replace('"','').replace("'",'')
     text_encoding = config.get('text_encoding', 'utf-8')
     file_suffix = config.get('file_suffix','_with_text')
+    line_spacing = float(config.get('line_spacing', 1.0))
 
     text = ''
     #detect txt or csv by extension
@@ -110,7 +112,7 @@ if __name__ == "__main__":
 
         t = time.process_time()
 
-        result = combine(path, text, font, font_color, font_size, bg_color)
+        result = combine(path, text, font, font_color, font_size, bg_color, line_spacing)
         path_name, path_extension = path.rsplit('.', 1)
         result_path = "%s%s.png" % (path_name, file_suffix)
         result.save(result_path)

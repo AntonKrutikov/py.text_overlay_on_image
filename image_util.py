@@ -10,6 +10,8 @@ from PIL import Image, ImageDraw, ImageFont
 from itertools import cycle
 import PIL
 
+Image.MAX_IMAGE_PIXELS = None
+
 class ImageText(object):
     def __init__(self, filename_or_size_or_Image, mode='RGBA', background=(0, 0, 0, 0),
                  encoding='utf8'):
@@ -143,11 +145,11 @@ class ImageText(object):
             height += text_height
         return (box_width, height - y)
 
-def combine(input_file_path:str, text:str, font:str, font_color, font_size, background=(255, 255, 255, 0)) -> Image.Image:
+def combine(input_file_path:str, text:str, font:str, font_color, font_size, background=(255, 255, 255, 0), line_spacing=1.0) -> Image.Image:
     layer_image = Image.open(input_file_path).convert("RGBA")
     layer_text = ImageText((layer_image.width, layer_image.height), background=background) #full transparent bg for this layer
 
-    layer_text.write_text_box((0, 0), text, box_width=layer_image.width, font_filename=font, font_size=font_size, color=font_color, place='justify')
+    layer_text.write_text_box((0, 0), text, box_width=layer_image.width, font_filename=font, font_size=font_size, color=font_color, place='justify', line_spacing=line_spacing)
 
     combined = Image.alpha_composite(layer_image, layer_text.image)
     return combined

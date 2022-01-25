@@ -6,6 +6,7 @@ Put transparent text layer from input (txt or csv) on top of image.
 ; path to true type font (better) or system font name
 font = Roboto-Regular.ttf
 font_size = 14
+line_spacing = 1.0
 ; change combinations of font and background colors with opacity to get different results
 ; resulting image layers will be combined with alpha support
 ; font rgb color with opacity last value from 0 to 255, 0 - fully transparent
