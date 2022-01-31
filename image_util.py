@@ -121,8 +121,7 @@ class ImageText(object):
                                 font_size, color)
             elif place == 'justify':
                 words = line.split()
-                if (index == len(lines) - 1 and not justify_last_line) or \
-                   len(words) == 1:
+                if (index == len(lines) - 1 and not justify_last_line) or len(words) == 1:
                     self.write_text((x, height), line, font_filename, font_size,
                                     color)
                     continue
