@@ -1,9 +1,14 @@
+from pydoc import cram
+import random
+from tkinter import Image
 from image_util import combine
 import os
 import sys
 import csv
 import time
 import configparser
+from image_util import ImageText
+from PIL import Image
 
 def create_config(path:str):
     config = configparser.ConfigParser(allow_no_value=True)
@@ -113,6 +118,20 @@ if __name__ == "__main__":
         t = time.process_time()
 
         result = combine(path, text, font, font_color, font_size, bg_color, line_spacing)
+
+        result = Image.open('example.jpeg').convert("RGBA")
+        #test
+        for i in range(10):   
+            x = random.choice(range(1920))
+            y = random.choice(range(1080)) 
+            start = random.choice(range(len(text)))
+            font_size = random.choice([40,80,120])
+            temp = Image.new(mode="RGBA",size=(result.width, result.height), color="rgba(0,0,0,0)")
+            img2= ImageText((temp.width, int(temp.height /4 )), background="rgba(0,0,0,0)") #full transparent bg for this layer
+            img2.write_text_box((0, 0), text[start:start+1000], box_width=temp.width, font_filename=font, font_size=font_size, color="rgba(255,255,255,20)", place='left', line_spacing=line_spacing)
+            temp.paste(img2.image, (0,y))
+            result = Image.alpha_composite(result, temp)
+
         path_name, path_extension = path.rsplit('.', 1)
         result_path = "%s%s.png" % (path_name, file_suffix)
         result.save(result_path)
