@@ -1,24 +1,27 @@
-from turtle import width
 from PIL import Image, ImageDraw, ImageFont
 import csv
 import random
 import math
 
-from sklearn.metrics import consensus_score
-from image_util import ImageText
-from itertools import cycle
+# Segments
+min_width = 1920 / 8
+min_height = 1080 / 8
+# Divide to
+divide_to = 30
+# Random font sizes from:
+font_size_list = [20,24,32,48]
+#Image path
+path = 'input_test_2.jpeg'
 
-min_width = 1920 / 10
-min_height = 1080 / 10
-max_width = 512
-max_height = 128
-
+iterations = 0
 def divide(rectangles:list):
     x,y,width,height = rectangles[-1]
     found = False
     while found == False:
+        if iterations > 1000:
+            break
         orientation = random.choice(['h','w'])
-        proportion = random.choice([2,4])
+        proportion = random.choice([1,2,3,4,5,6])
         if orientation == 'w':
             median = width / proportion
             if median < min_width:
@@ -39,7 +42,13 @@ def divide(rectangles:list):
     # sort it to future use
     rectangles.sort(key=lambda rec: rec[2]*rec[3])
 
-img = Image.open('example.jpeg').convert('RGBA')
+def trans_paste(bg_img,fg_img,box=(0,0)):
+    fg_img_trans = Image.new("RGBA",bg_img.size)
+    fg_img_trans.paste(fg_img,box,mask=fg_img)
+    new_img = Image.alpha_composite(bg_img,fg_img_trans)
+    return new_img
+
+img = Image.open(path).convert('RGBA')
 rectangles = [(0,0,img.width,img.height)]
 
 count = 1
@@ -50,33 +59,24 @@ with open('news.csv', encoding='unicode_escape') as csv_file:
         news.append("%s (%s)" % (row[0], row[1]))
         count+=1
 
-for i in range(20):
+for i in range(divide_to):
     divide(rectangles)
-# rectangles = [(0,0,250,250),(250,0,250,250),(500,0,250,250), (750,0,250,250)]
 
 i = 0
-# lines.sort(key=lambda l: len(l), reverse=False)
 pad = 20
-fill_color = "rgba(0,0,0,255)"
+fill_color = "rgba(0,0,0,245)"
 font_color = "rgba(255,255,255,0)"
 
 # fill_color = "rgba(0,0,0,0)"
-# font_color = "rgba(255,255,255,100)"
+# font_color = "rgba(255,255,255,150)"
 
 for rect in rectangles:
     x,y,w,h = rect
 
-    # draw.rectangle((x,y,x+w-2,y+h-2), fill="rgba(0,0,0,0)", outline="#fff", width=1)
-    font_size = random.choice([24,32,48])
+    font_size = random.choice(font_size_list)
     if w < 100:
         font_size = 12
 
-    # if font_size>32:
-    #     fill_color = "rgba(0,0,0,100)"
-    #     font_color = "rgba(255,255,255,100)"
-    # else:
-    #     fill_color = "rgba(0,0,0,255)"
-    #     font_color = "rgba(255,255,255,0)"
     img2 = Image.new(mode="RGBA", size=(w,h), color=fill_color)
     draw = ImageDraw.Draw(img2)
     font = ImageFont.truetype('Roboto-Regular.ttf', font_size)
@@ -109,22 +109,19 @@ for rect in rectangles:
                     break
                 lines.append(line_words.copy())
                 line_words = []
-    # if block_h < h:
-    lines.append(line_words)
+    if block_h < h:
+        lines.append(line_words)
 
     ty = 0
-    print(text, len(lines))
     for line in lines:
         t = ' '.join(line)
         tw, th = font.getsize(t)
 
 
-        draw.text((0+8,ty+8), t, fill=font_color, font=font)
+        draw.text((0+4,ty+4), t, fill=font_color, font=font)
         tw, th = font.getsize(t)
         ty += th + 2
-    # text_area = ImageText((w, h), background="rgba(0,0,0,0)") 
-    # text_area.write_text_box((pad, pad), text, box_width=w-pad, font_filename='Roboto-Regular.ttf', font_size=font_size, color="#fff", place='justify', position='middle')
-    img.paste(img2, (x,y), img2)
+    img = trans_paste(img, img2, (x,y))
    
 
 img.save("test.png")
