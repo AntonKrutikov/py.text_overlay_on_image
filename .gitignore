@@ -3,3 +3,6 @@ __pycache__
 *.png
 *.jpeg
 *.jpg
+input/*
+out/*
+_news.csv

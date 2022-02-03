@@ -1,50 +1,13 @@
-from pydoc import cram
-import random
-from tkinter import Image
-from image_util import combine
+from PIL import Image
 import os
-import sys
-import csv
 import time
 import configparser
-from image_util import ImageText
-from PIL import Image
+import argparse
+from config import create_config
+from typing import Tuple, List, Dict
+from utils import csv_load, measure, pack, trans_paste, draw_boxes, algorithms_dict
 
-def create_config(path:str):
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.add_section('default')
-    config['default'] = {
-        '; Path to true type font (better) or system font name': None,
-        'font': 'Roboto-Regular.ttf',
-        'font_size': 14,
-        'line_spacing': 1.0,
-        '; Change combinations of font and background colors with opacity to get different results':None,
-        '; Resulting image layers will be combined with alpha support':None,
-        '; font rgb color with opacity last value from 0 to 255, 0 - fully transparent': None,
-        'font_color': '20,20,20,20',
-        'bg_color': '0,0,0,255',
-        '; Input can be *.txt or *.csv file path': None,
-        'text_file': 'news.csv',
-        '; Better to provide input in "utf-8"': None,
-        'text_encoding': 'utf-8',
-        '; If input is csv file, detect how many columns for each row will be treated as separate input': None,
-        'csv_delimeter': ';',
-        'csv_columns': 2,
-        '; Use this str separator between row content from csv file': None,
-        'separator' : '|',
-        '; Open and close chars will be puted around content of second csv column': None,
-        'source_column_open_char': '(',
-        'source_column_close_char': ')',
-        '; Append this suffix to resulting png file before extension': None,
-        'file_suffix':'_with_text',
-        '; Comma separated list of input images paths, can be quoted with \' or "': None,
-        'image_files': 'example.jpeg'
-    }
-    with open(path, "w") as config_file:
-        config.write(config_file)
-
-
-# Main
+Image.MAX_IMAGE_PIXELS = None
 
 if __name__ == "__main__":
     # Create config if not exists
@@ -54,85 +17,181 @@ if __name__ == "__main__":
     config_file.read('config.ini')
     config = config_file['default']
 
-    # Detect images files as list (can be pure string, or string with quotes)
-    image_files = [f.strip().replace('"','').replace("'",'') for f in config.get('image_files').split(',')]
-    if len(image_files) == 0:
-        print("No image_files found in config files - exit")
-        exit()
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('--test-pack', help='Test all algs other input images', default=False, action='store_true')
+    args = arg_parser.parse_args()
 
-    font = config.get('font').strip().replace('"','').replace("'",'')
-    font_color = tuple(int(v.strip()) for v in config.get('font_color').split(','))
-    font_size = int(config.get('font_size'))
-    bg_color = tuple(int(v.strip()) for v in config.get('bg_color').split(','))
-    text_input = config.get('text_file').strip().replace('"','').replace("'",'')
-    text_encoding = config.get('text_encoding', 'utf-8')
-    file_suffix = config.get('file_suffix','_with_text')
-    line_spacing = float(config.get('line_spacing', 1.0))
+    file_path = config.get('text_file')
+    columns_count = int(config.get('csv_columns'))
+    delimeter = config.get('csv_delimeter')
+    encoding = config.get('text_encoding')
+    font_name = config.get('font')
+    font_sizes = [int(size) for size in config.get('font_sizes').split(',')]
+    font_weights = [float(weight) for weight in config.get('font_weights').split(',')]
+    image_files = config.get('image_files').split(',')
+    out_dir = config.get('out_dir')
+    bg_color = 'rgba(%s)' % config.get('bg_color', '0,0,0,255')
+    font_color = 'rgba(%s)' % config.get('font_color', '255,255,255,0')
+    mode = config.get('mode', 'composite')
+    algorithm = config.get('algorithm', 'GuillotineBafLas')
+    file_suffix = config.get('file_suffix')
+    img_width_gap = 256
 
-    text = ''
-    #detect txt or csv by extension
-    extension = text_input.rsplit('.', 1)[1]
-    if extension == 'txt':
-        with open(text_input, encoding=text_encoding) as txt_file:
-            text = ' '.join(line for line in  txt_file.read().splitlines())
-    if extension == 'csv':
-        delimeter = config.get('csv_delimeter')
-        column_count = int(config.get('csv_columns'))
-        separator = config.get('separator', '')
-        open_char = config.get('source_column_open_char', '')
-        close_char = config.get('source_column_close_char', '')
-        try:
-            with open(text_input, encoding=text_encoding) as csv_file:
-                reader = csv.reader(csv_file, delimiter=delimeter )
-                for row in reader:
-                    for i in range(column_count):
-                        if len(row[i].strip()) > 0:
-                            if i == 1:
-                                text += open_char + ' ' + row[i] + ' ' + close_char +' '
-                            else:
-                                text += row[i] + ' '
-                    text += separator + ' '
-        # check for broken files, WARNING: please provide good files
-        except UnicodeDecodeError:
-            text = ''
-            with open(text_input, encoding='unicode_escape') as csv_file:
-                reader = csv.reader(csv_file, delimiter=delimeter )
-                for row in reader:
-                    for i in range(column_count):
-                        if len(row[i].strip()) > 0:
-                            if i == 1:
-                                text += open_char + ' ' + row[i] + ' ' + close_char +' '
-                            else:
-                                text += row[i] + ' '
-                    text += separator + ' '
-    else:
-        print("Unknown text_input format, only *.txt and *.csv supported")
-        exit()
 
-    # Process all images from config input
-    for path in image_files:
-        if not os.path.isfile(path):
-            print("%s is not a real file" % path)
-            continue
+    t = time.process_time()
+    news = []
+    if file_path.endswith('.csv'):
+        news = csv_load(file_path, columns_count, delimeter, encoding)
+    print("csv loaded %.2fs" % (time.process_time() - t))
+    
+    t = time.process_time()
+    news_boxes = measure(news, font_name, font_sizes, font_weights)
+    print("text measured %.2fs" % (time.process_time() - t))
 
-        t = time.process_time()
+    for image in image_files:
+        print("\nimage: '%s'" % image)
 
-        result = combine(path, text, font, font_color, font_size, bg_color, line_spacing)
+        test_flag = False
+        statistic = []
+        if args.test_pack == True:
+            algs = list(algorithms_dict.values())
+            test_flag = True
+        else:
+            algs = [algorithms_dict[algorithm]]
 
-        result = Image.open('example.jpeg').convert("RGBA")
-        #test
-        for i in range(10):   
-            x = random.choice(range(1920))
-            y = random.choice(range(1080)) 
-            start = random.choice(range(len(text)))
-            font_size = random.choice([40,80,120])
-            temp = Image.new(mode="RGBA",size=(result.width, result.height), color="rgba(0,0,0,0)")
-            img2= ImageText((temp.width, int(temp.height /4 )), background="rgba(0,0,0,0)") #full transparent bg for this layer
-            img2.write_text_box((0, 0), text[start:start+1000], box_width=temp.width, font_filename=font, font_size=font_size, color="rgba(255,255,255,20)", place='left', line_spacing=line_spacing)
-            temp.paste(img2.image, (0,y))
-            result = Image.alpha_composite(result, temp)
+        text_areas = [(box['size'][0],box['size'][1],box['id']) for box in news_boxes]
+        for alg in algs:
+            bg = Image.open(image).convert("RGBA")
+            # Add some value to width for text covers whole result
+            img = Image.new(size=(bg.size[0] + img_width_gap, bg.size[1]), mode="RGBA", color=bg_color)
 
-        path_name, path_extension = path.rsplit('.', 1)
-        result_path = "%s%s.png" % (path_name, file_suffix)
-        result.save(result_path)
-        print('Processed: %s -> %s, %.2fs' % (path, result_path, time.process_time() - t))
+            bins = [img.size]
+
+            if test_flag == True:
+                file_suffix = "_%s" % alg.__name__
+
+            t = time.process_time()
+            boxes = pack(text_areas, bins, algo=alg)
+            statistic.append({alg.__name__: time.process_time() - t})
+            print("rectpack %.2fs" % (time.process_time() - t))
+
+            t = time.process_time()
+            draw_boxes(img, boxes, news_boxes, font_name, font_color)
+            img = img.crop(box=(0,0,img.width - img_width_gap,img.height))
+
+            if mode == 'composite':
+                bg = trans_paste(bg,img)
+            else:
+                bg.paste(img, (0,0), img)
+
+            file_name = image.split('/')[-1].rsplit('.', 1)[0]
+            out_path = "%s/%s%s.png" % (out_dir, file_name, file_suffix )
+            bg.save(out_path)
+            print("draw %.2fs" % (time.process_time() - t))
+            print("saved to %s" % out_path)
+
+        statistic_out_path = "%s/%s_log.txt" % (out_dir, file_name)
+        statistic.sort(key=lambda alg: list(alg.values())[0])
+        if test_flag == True:
+            with open(statistic_out_path, 'w') as f:
+                for s in statistic:
+                    f.write("%s: %.2fs\n" % tuple(s.items())[0])
+    
+    # pack
+
+    # TODO: provide file from args
+
+# img_path = "input_avengers.png"
+# # available font sizes and them weights (how often random choice that one)
+# # Examples:
+# # font_sizes = [12,20,64]
+# # font_weights = [70,20,10]
+# font_sizes = [8,12,16,24,48]
+# font_weights = [5,5,5,1,0.25]
+# font_name = "Arial"
+# # anchor for drawing (lt is better then default la I think)
+# anchor= "lt"
+# # Hack to reduce bounding box of text with font greater then
+# big_font_size_after = 30
+# big_font_size_reduce_factor = 0.75
+# # modes
+# # 'paste' - works like overlay, more whatermark style
+# # 'composite' - composite by alpha chanel with temp layer (better, default)
+# mode = 'composite'
+# bg_color = "rgba(0,0,0,255)" #color under text (default black not transparent)
+# font_color = "rgba(255,255,255,0)" #full transparent for effect like lookig through window
+# # multiple news array by (because for big images it can be not enough) have effect on performance
+# # Note hack: I'm also populate news array fith source (small strings) one more time
+# news_multiply = 2
+
+# news_posts=[]
+# with open('news.csv', encoding='unicode_escape') as csv_file:
+#     reader = csv.reader(csv_file, delimiter=';')
+#     for row in reader:
+#         news_posts.append("%s (%s)" % (row[0], row[1]))
+#     # for row in reader:
+#     #     news_posts.append("%s" % (row[1]))
+
+# for i in range(news_multiply-1):
+#     news_posts += news_posts
+
+# random.shuffle(news_posts)
+
+# bg = Image.open(img_path).convert("RGBA")
+# img = Image.new(size=(bg.size[0] + 256, bg.size[1]), mode="RGBA", color=bg_color)
+# draw = ImageDraw.Draw(img)
+
+# news= []
+# id = 0
+# founded = False
+# for i,post in enumerate(news_posts):
+#     font_size = random.choices(population=font_sizes, weights=font_weights, k=1)[0]
+#     font = ImageFont.truetype(font_name, font_size)
+#     size = font.getsize(post)
+#     if font_size>big_font_size_after:
+#         size = (size[0], math.ceil(big_font_size_reduce_factor*size[1]))
+#     news.append({"text": post, "font_size": font_size, "size": size, "id": id})
+#     id+=1
+
+# print("Text Measurement complete\nStart packing")
+
+# rectangles = [(post['size'][0],post['size'][1],post['id']) for post in news]
+# bins = [img.size]
+
+# packer = newPacker(rotation=False, sort_algo=rectpack.SORT_NONE, pack_algo=rectpack.GuillotineBafLas)
+
+# # Add the rectangles to packing queue
+# for r in rectangles:
+#     packer.add_rect(*r)
+
+# # Add the bins where the rectangles will be placed
+# for b in bins:
+# 	packer.add_bin(*b)
+
+# # Start packing
+# packer.pack()
+
+# print("Packing complete\nStart drawing")
+
+# def trans_paste(bg_img,fg_img,box=(0,0)):
+#     fg_img_trans = Image.new("RGBA",bg_img.size)
+#     fg_img_trans.paste(fg_img,box,mask=fg_img)
+#     new_img = Image.alpha_composite(bg_img,fg_img_trans)
+#     return new_img
+
+# all_rects = packer.rect_list()
+# for rect in all_rects:
+#     b, x, y, w, h, rid = rect
+#     post = [post for post in news if post['id'] == rid][0]
+#     # print(w,h, post['size'],post['font_size'])
+#     font = ImageFont.truetype(font_name, post['font_size'])
+#     # draw.rectangle((x,y,x+w,y+h), fill="#000", outline="#aaa")
+#     draw.text((x,y),post['text'], fill=font_color, font=font, anchor=anchor)
+# img = img.crop(box=(0,0,img.width - 256,img.height))
+
+# if mode == 'composite':
+#     bg = trans_paste(bg,img)
+# else:
+#     bg.paste(img, (0,0), img)
+
+# bg.save("rectpack.png")
