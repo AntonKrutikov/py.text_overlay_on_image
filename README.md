@@ -39,7 +39,33 @@ algorithm = GuillotineBafLas
 
 Current version using `rectpack` for place text boxes over images
 
-Some test:
+Some tests (1920x1080) M1 mac:
 
+All `MaxRects` produce good results, but not fast, `GuillotineBafLas` very faster with same result
+
+```
+GuillotineBlsfMaxas: 0.01s
+GuillotineBafMaxas: 0.01s
+GuillotineBssfMaxas: 0.01s
+GuillotineBssfLlas: 0.02s
+GuillotineBafLas: 0.02s
+GuillotineBafLlas: 0.02s
+GuillotineBssfLas: 0.02s
+GuillotineBlsfLlas: 0.03s
+GuillotineBlsfLas: 0.03s
+GuillotineBssfMinas: 0.03s
+GuillotineBafMinas: 0.03s
+GuillotineBlsfMinas: 0.03s
+GuillotineBssfSas: 0.10s
+GuillotineBafSas: 0.11s
+GuillotineBssfSlas: 0.11s
+GuillotineBlsfSas: 0.12s
+GuillotineBlsfSlas: 0.14s
+GuillotineBafSlas: 0.14s
+MaxRectsBlsf: 0.47s
+MaxRectsBaf: 0.48s
+MaxRectsBl: 0.53s
+MaxRectsBssf: 0.58s
+```
 
 ![lion](lion.png)

@@ -4,5 +4,5 @@ __pycache__
 *.jpeg
 *.jpg
 input/*
-out/*
+output/*
 _news.csv
