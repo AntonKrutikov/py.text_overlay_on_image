@@ -13,8 +13,8 @@ img_path = "example.jpeg"
 # Examples:
 # font_sizes = [12,20,64]
 # font_weights = [70,20,10]
-font_sizes = [12,16,64]
-font_weights = [5,5,0.25]
+font_sizes = [8,12,16,24,64]
+font_weights = [5,5,5,1,0.5]
 font_name = "Arial"
 # anchor for drawing (lt is better then default la I think)
 anchor= "lt"
@@ -29,7 +29,7 @@ bg_color = "rgba(0,0,0,255)" #color under text (default black not transparent)
 font_color = "rgba(255,255,255,0)" #full transparent for effect like lookig through window
 # multiple news array by (because for big images it can be not enough) have effect on performance
 # Note hack: I'm also populate news array fith source (small strings) one more time
-news_multiply = 2
+news_multiply = 1
 
 news_posts=[]
 with open('news.csv', encoding='unicode_escape') as csv_file:
@@ -60,7 +60,7 @@ for i,post in enumerate(news_posts):
     news.append({"text": post, "font_size": font_size, "size": size, "id": id})
     id+=1
 
-print("Text Measurement complete")
+print("Text Measurement complete\nStart packing")
 
 rectangles = [(post['size'][0],post['size'][1],post['id']) for post in news]
 bins = [img.size]
@@ -77,6 +77,8 @@ for b in bins:
 
 # Start packing
 packer.pack()
+
+print("Packing complete\nStart drawing")
 
 def trans_paste(bg_img,fg_img,box=(0,0)):
     fg_img_trans = Image.new("RGBA",bg_img.size)
