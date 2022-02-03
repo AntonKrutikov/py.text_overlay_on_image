@@ -68,4 +68,4 @@ MaxRectsBl: 0.53s
 MaxRectsBssf: 0.58s
 ```
 
-![lion](lion.png)
+![woman](woman.png)
