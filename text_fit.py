@@ -7,7 +7,7 @@ import math
 
 bg = Image.open('input_car.jpeg').convert("RGBA")
 img = Image.new(size=(bg.width,bg.height), mode='RGBA', color="rgba(0,0,0,0)")
-cols = 8
+cols = 72
 rows = 16
 
 def trans_paste(bg_img,fg_img,box=(0,0)):
@@ -95,7 +95,7 @@ random.shuffle(news)
 
 have_blocks = True
 for text in news:
-    base_font_size = random.choices(population=[8,16,20], k=1)[0]
+    base_font_size = random.choices(population=[8,10], k=1)[0]
     font_size = base_font_size
     font_name = 'Roboto-Regular.ttf'
     fit, lines = (True, None)
@@ -114,7 +114,7 @@ for text in news:
             fit, lines = can_fit((int(width), int(height)), text, font_size, font_name)
             font_size+=1
         if font_size == base_font_size +1 and fit == False:
-            c = random.choice([1,2,3])
+            c = random.choice([1,2,4])
             b = []
             for i in range(c):
                 temp = get_block(grid)
