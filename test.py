@@ -7,7 +7,7 @@ import math
 min_width = 1920 / 8
 min_height = 1080 / 8
 # Divide to
-divide_to = 30
+divide_to = 50
 # Random font sizes from:
 font_size_list = [20,24,32,48]
 #Image path
