@@ -4,6 +4,7 @@ import random
 from matplotlib.pyplot import draw
 from rectpack import newPacker
 import rectpack
+import math
 
 img_path = "input_car.jpeg"
 # available font sizes and them weights (how often random choice that one)
@@ -12,7 +13,12 @@ img_path = "input_car.jpeg"
 # font_weights = [70,20,10]
 font_sizes = [8,10,12,14,16,18,20,22,24,26,28,32,40,64]
 font_weights = [2,2,2,2,2,2,2,1,1,1,1,0.5,0.5,0.5]
-font_name = "Roboto-Regular.ttf"
+font_name = "Arial"
+# anchor for drawing (lt is better then default la I think)
+anchor= "lt"
+# Hack to reduce bounding box of text with font greater then
+big_font_size_after = 30
+big_font_size_reduce_factor = 0.75
 
 news_posts=[]
 with open('news.csv', encoding='unicode_escape') as csv_file:
@@ -30,6 +36,8 @@ for post in news_posts:
     font_size = random.choices(population=font_sizes, weights=font_weights, k=1)[0]
     font = ImageFont.truetype(font_name, font_size)
     size = font.getsize(post)
+    if font_size>big_font_size_after:
+        size = (size[0], math.ceil(big_font_size_reduce_factor*size[1]))
     news.append({"text": post, "font_size": font_size, "size": size, "id": id})
     id+=1
 
@@ -61,7 +69,7 @@ for rect in all_rects:
     print(w,h, post['size'],post['font_size'])
     font = ImageFont.truetype(font_name, post['font_size'])
     # draw.rectangle((x,y,x+w,y+h), fill="#000", outline="#aaa")
-    draw.text((x,y),post['text'], "rgba(255,255,255,20)", font)
+    draw.text((x,y),post['text'], "rgba(255,255,255,20)", font, spacing=-10, anchor=anchor)
 img = img.crop(box=(0,0,img.width - 256,img.height))
 bg = Image.alpha_composite(bg, img)
 bg.save("rectpack.png")
