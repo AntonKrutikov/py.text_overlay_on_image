@@ -34,7 +34,11 @@ def create_config(path:str):
         '; Mode "composite" (alpha blend) or "paste". (composite is better)': None,
         'mode':'composite',
         '; GuillotineBafLas - fast with same +- result as MaxRectsBlsf (which much slower)': None,
-        'algorithm':'GuillotineBafLas'
+        'algorithm':'GuillotineBafLas',
+        '; Increase news list by': None,
+        'news_multiply_by': 1,
+        'news_shuffle': False
+
     }
     with open(path, "w") as config_file:
         config.write(config_file)

@@ -1,3 +1,4 @@
+import random
 from PIL import Image
 import os
 import time
@@ -25,6 +26,8 @@ if __name__ == "__main__":
     columns_count = int(config.get('csv_columns'))
     delimeter = config.get('csv_delimeter')
     encoding = config.get('text_encoding')
+    news_multiply_by = int(config.get('news_multiply_by', 1))
+    news_shuffle = bool(config.get('news_shuffle', False))
     font_name = config.get('font')
     font_sizes = [int(size) for size in config.get('font_sizes').split(',')]
     font_weights = [float(weight) for weight in config.get('font_weights').split(',')]
@@ -42,6 +45,14 @@ if __name__ == "__main__":
     news = []
     if file_path.endswith('.csv'):
         news = csv_load(file_path, columns_count, delimeter, encoding)
+    
+    if news_shuffle == True:
+        random.shuffle(news)
+
+    if news_multiply_by > 1:
+        for i in range(news_multiply_by-1):
+            news+= news
+            
     print("csv loaded %.2fs" % (time.process_time() - t))
     
     t = time.process_time()
