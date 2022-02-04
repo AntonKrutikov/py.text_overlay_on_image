@@ -48,6 +48,10 @@ Process all images from `input` folder and put results in `out_test` folder:
 
 `python3 app.py -i input -out out_test`
 
+Process all images from folder `input1` and `input2` (Warning: same file names will be overwritten in this version):
+
+`python3 app.py -i input -i input2`
+
 
 Current version using `rectpack` for place text boxes over images
 
