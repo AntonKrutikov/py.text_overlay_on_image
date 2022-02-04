@@ -65,7 +65,7 @@ if __name__ == "__main__":
     bg_color = 'rgba(%s)' % config.get('bg_color', '0,0,0,255')
     font_color = 'rgba(%s)' % config.get('font_color', '255,255,255,0')
     mode = config.get('mode', 'composite')
-    algorithm = config.get('algorithm', 'GuillotineBafLas')
+    algorithm = config.get('algorithm', 'MaxRectsBssf')
     file_suffix = config.get('file_suffix')
     img_width_gap = 256
 

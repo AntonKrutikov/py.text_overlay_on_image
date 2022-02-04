@@ -85,7 +85,7 @@ algorithms_dict:Dict = {
     'GuillotineBafMinas': rectpack.GuillotineBafMinas
 }
 
-def pack(boxes:List, bins:List, algo = rectpack.GuillotineBafLas, sort = rectpack.SORT_NONE) -> List:
+def pack(boxes:List, bins:List, algo = rectpack.MaxRectsBssf, sort = rectpack.SORT_NONE) -> List:
     packer = newPacker(rotation=False, sort_algo=sort, pack_algo=algo)
      # Add the rectangles to packing queue
     for r in boxes:
