@@ -44,6 +44,11 @@ Process 2 images to default 'output' folder:
 
 `python3 app.py -i input/lion.jpeg -i input/car.jpeg`
 
+Process all images from `input` folder and put results in `out_test` folder:
+
+`python3 app.py -i input -out out_test`
+
+
 Current version using `rectpack` for place text boxes over images
 
 Some tests (1920x1080) M1 mac:

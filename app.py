@@ -1,3 +1,4 @@
+from pydoc import ispath
 import random
 from PIL import Image
 import os
@@ -21,7 +22,36 @@ if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--test-pack', help='Test all algs other input images', default=False, action='store_true')
     arg_parser.add_argument('-i', '--input', help='Input image file path', metavar='path', action='append')
+    arg_parser.add_argument('-out', '--output', help='Path to output folder', metavar='path')
     args = arg_parser.parse_args()
+
+    # Input can be multiple files or multiple folders
+    image_paths = args.input or config.get('image_files').split(',')
+    image_files = []
+    for path in image_paths:
+        if not os.path.exists(path):
+            print('Notice: Not a real file %s' % path)
+            break
+        if os.path.isfile(path):
+            ext = path.rsplit('.', 1)
+            if len(ext) == 2 and ext[1] not in ['jpeg', 'jpg', 'png']:
+                print('Notice: Unsupported file format for "%s"' % path)
+                break
+            image_files.append(path)
+        elif os.path.isdir(path):
+            for file in os.listdir(path):
+                ext = file.rsplit('.', 1)
+                if len(ext) ==2 and ext[1] in ['jpeg', 'jpg', 'png']:
+                    image_files.append("%s/%s" % (path.rstrip('/'),file))
+
+    if len(image_files) == 0:
+        print('No input')
+        exit()
+
+    out_dir = args.output or config.get('out_dir')
+    # create out if not exists
+    if not os.path.isdir(out_dir):
+        os.mkdir(out_dir)
 
     file_path = config.get('text_file')
     columns_count = int(config.get('csv_columns'))
@@ -32,8 +62,6 @@ if __name__ == "__main__":
     font_name = config.get('font')
     font_sizes = [int(size) for size in config.get('font_sizes').split(',')]
     font_weights = [float(weight) for weight in config.get('font_weights').split(',')]
-    image_files = args.input if len(args.input)> 0 else None or config.get('image_files').split(',')
-    out_dir = config.get('out_dir')
     bg_color = 'rgba(%s)' % config.get('bg_color', '0,0,0,255')
     font_color = 'rgba(%s)' % config.get('font_color', '255,255,255,0')
     mode = config.get('mode', 'composite')
