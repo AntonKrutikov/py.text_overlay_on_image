@@ -57,7 +57,7 @@ Current version using `rectpack` for place text boxes over images
 
 Some tests (1920x1080) M1 mac:
 
-All `MaxRects` produce good results, but not fast, `GuillotineBafLas` very faster with same result
+All `MaxRects` produce good results, but not fast, `GuillotineBssfMinas` very faster with same result
 
 ```
 GuillotineBlsfMaxas: 0.01s
