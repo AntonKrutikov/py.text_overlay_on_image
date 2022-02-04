@@ -1,7 +1,7 @@
 __pycache__
 .DS_Store
 *.png
-!lion.png
+!woman.png
 *.jpeg
 *.jpg
 input/*

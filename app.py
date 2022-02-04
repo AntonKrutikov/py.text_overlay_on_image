@@ -20,6 +20,7 @@ if __name__ == "__main__":
 
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('--test-pack', help='Test all algs other input images', default=False, action='store_true')
+    arg_parser.add_argument('-i', '--input', help='Input image file path', metavar='path', action='append')
     args = arg_parser.parse_args()
 
     file_path = config.get('text_file')
@@ -31,7 +32,7 @@ if __name__ == "__main__":
     font_name = config.get('font')
     font_sizes = [int(size) for size in config.get('font_sizes').split(',')]
     font_weights = [float(weight) for weight in config.get('font_weights').split(',')]
-    image_files = config.get('image_files').split(',')
+    image_files = args.input if len(args.input)> 0 else None or config.get('image_files').split(',')
     out_dir = config.get('out_dir')
     bg_color = 'rgba(%s)' % config.get('bg_color', '0,0,0,255')
     font_color = 'rgba(%s)' % config.get('font_color', '255,255,255,0')
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     if news_multiply_by > 1:
         for i in range(news_multiply_by-1):
             news+= news
-            
+
     print("csv loaded %.2fs" % (time.process_time() - t))
     
     t = time.process_time()

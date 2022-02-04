@@ -36,6 +36,13 @@ mode = composite
 algorithm = GuillotineBafLas
 ```
 
+If args not provided, values from config will be used.
+
+Examples:
+
+Process 2 images to default 'output' folder:
+
+`python3 app.py -i input/lion.jpeg -i input/car.jpeg`
 
 Current version using `rectpack` for place text boxes over images
 
