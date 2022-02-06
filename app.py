@@ -23,7 +23,8 @@ if __name__ == "__main__":
     arg_parser.add_argument('--test-pack', help='Test all algs other input images', default=False, action='store_true')
     arg_parser.add_argument('-i', '--input', help='Input image file path', metavar='path', action='append')
     arg_parser.add_argument('-out', '--output', help='Path to output folder', metavar='path')
-    arg_parser.add_argument('--remeasure', help='Path to output folder', default=None, action='store_true')
+    arg_parser.add_argument('--remeasure', help='Remeasure font-size for each image', default=None, action='store_true')
+    arg_parser.add_argument('--shuffle', help='Shuffle news blocks for each image', default=None, action='store_true')
     args = arg_parser.parse_args()
 
     # Input can be multiple files or multiple folders
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     delimeter = config.get('csv_delimeter')
     encoding = config.get('text_encoding')
     news_multiply_by = int(config.get('news_multiply_by', 1))
-    news_shuffle = bool(config.get('news_shuffle', False))
+    news_shuffle = args.shuffle or bool(config.get('news_shuffle', False))
     font_name = config.get('font')
     font_sizes = [int(size) for size in config.get('font_sizes').split(',')]
     font_weights = [float(weight) for weight in config.get('font_weights').split(',')]
@@ -69,7 +70,7 @@ if __name__ == "__main__":
     algorithm = config.get('algorithm', 'MaxRectsBssf')
     file_suffix = config.get('file_suffix')
     img_width_gap = 256
-    remeasure = args.remeasure or config.get('news_measure_each_step', False)
+    remeasure = args.remeasure or bool(config.get('news_remeasure', False))
 
 
     t = time.process_time()
@@ -96,6 +97,8 @@ if __name__ == "__main__":
             news_boxes = measure(news, font_name, font_sizes, font_weights)
             measured = True
             print("text measured %.2fs" % (time.process_time() - t))
+        if news_shuffle:
+            random.shuffle(news_boxes)
         
 
         test_flag = False
