@@ -7,8 +7,8 @@ def create_config(path:str):
         '; Path to true type font (better) or system font name': None,
         'font': 'Roboto-Regular.ttf',
         '; Comma separated list of font sizes and them weights (used in random choice, mean how often to take)': None,
-        'font_sizes': '8, 16',
-        'font_weights': '1, 1',
+        'font_sizes': '8, 16, 32, 64',
+        'font_weights': '1, 1, 0.5, 0.5',
         '; Change combinations of font and background colors with opacity to get different results':None,
         '; Resulting image layers will be combined with alpha support':None,
         '; font rgb color with opacity last value from 0 to 255, 0 - fully transparent': None,
@@ -37,7 +37,8 @@ def create_config(path:str):
         'algorithm':'GuillotineBafLas',
         '; Increase news list by': None,
         'news_multiply_by': 1,
-        'news_shuffle': False
+        'news_shuffle': False,
+        'news_remeasure': False
 
     }
     with open(path, "w") as config_file:

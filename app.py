@@ -23,6 +23,7 @@ if __name__ == "__main__":
     arg_parser.add_argument('--test-pack', help='Test all algs other input images', default=False, action='store_true')
     arg_parser.add_argument('-i', '--input', help='Input image file path', metavar='path', action='append')
     arg_parser.add_argument('-out', '--output', help='Path to output folder', metavar='path')
+    arg_parser.add_argument('--remeasure', help='Path to output folder', default=None, action='store_true')
     args = arg_parser.parse_args()
 
     # Input can be multiple files or multiple folders
@@ -68,6 +69,7 @@ if __name__ == "__main__":
     algorithm = config.get('algorithm', 'MaxRectsBssf')
     file_suffix = config.get('file_suffix')
     img_width_gap = 256
+    remeasure = args.remeasure or config.get('news_measure_each_step', False)
 
 
     t = time.process_time()
@@ -83,13 +85,18 @@ if __name__ == "__main__":
             news+= news
 
     print("csv loaded %.2fs" % (time.process_time() - t))
-    
-    t = time.process_time()
-    news_boxes = measure(news, font_name, font_sizes, font_weights)
-    print("text measured %.2fs" % (time.process_time() - t))
 
+    measured = False
+    news_boxes = []
     for image in image_files:
         print("\nimage: '%s'" % image)
+
+        if not measured or remeasure:
+            t = time.process_time()
+            news_boxes = measure(news, font_name, font_sizes, font_weights)
+            measured = True
+            print("text measured %.2fs" % (time.process_time() - t))
+        
 
         test_flag = False
         statistic = []
